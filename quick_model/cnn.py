@@ -2,13 +2,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from matplotlib import pyplot as plt
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader,Dataset
 from quick_model.base import BaseModel
+from enum import Enum
 
+class ConvDim(Enum):
+    Conv2D = '2D'
+    Conv3D = '3D'
 
 class CNNModel(BaseModel):
 
-    def __init__(self,input_feature:int,output_feature:int = 1,num_of_layer:int = 3):
+    def __init__(self,input_feature:int,output_feature:int = 1,num_of_layer:int = 3,conv_dim:ConvDim = ConvDim.Conv2D):
         super().__init__()
 
         self.input_layer = nn.Linear(input_feature,16)

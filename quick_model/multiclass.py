@@ -2,18 +2,29 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from matplotlib import pyplot as plt
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, Dataset
 
 from quick_model.base import BaseModel
 
 
 class MultiClassModel(BaseModel):
 
-    def __init__(self,input_feature:int,output_feature:int = 3,num_of_layer:int = 3):
+    def __init__(self, input_feature: int, output_feature: int = 3, num_of_layer: int = 3):
+        """
+        Initializes a multi-class classification model using CrossEntropyLoss as the default loss function.
+        The model also calculates accuracy during training.
+
+        :param input_feature: Number of input features in your dataset.
+        :param output_feature: Number of output classes in your label dataset. Default is 3. Example: [0, 1, 2] for a 3-class classification.
+        :param num_of_layer: Total number of layers in the model, including the input and output layers.
+                             Default is 3, which results in 1 hidden layer.
+        """
+
         super().__init__()
 
         self.input_layer = nn.Linear(input_feature,16)
         self.layers.append(self.input_layer)
+        self.criterion = nn.CrossEntropyLoss()
 
 
         for i in range(0,num_of_layer-2):
@@ -33,16 +44,15 @@ class MultiClassModel(BaseModel):
         return self.output_layer(x)
 
 
-    def __set_dataset__(self,train_dataset:TensorDataset,test_dataset:TensorDataset):
+    def __set_dataset__(self,train_dataset:Dataset,test_dataset:Dataset):
         self.train_dataset = train_dataset
         self.test_dataset = test_dataset
 
-        self.number_of_train_data = len(self.train_dataset)
-        self.number_of_test_data = len(self.test_dataset)
-
     def _train(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):
-        train_loader = DataLoader(self.train_dataset,batch_size=batch_size,shuffle=shuffle)
-        criterion: nn.Module = nn.CrossEntropyLoss()
+
+        self.train() # set model train mode on.
+        train_loader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=shuffle) # convert Dataset to DataLoader
+        criterion = self.criterion
 
         if optimizer == 'adam':
             self.optimizer = torch.optim.Adam(self.parameters(),lr=lr)
@@ -51,8 +61,6 @@ class MultiClassModel(BaseModel):
 
         self.train_losses = []
         self.train_accuracy = []
-
-        self.train()
 
         # number of trainings
         for epoch in range(epochs):
@@ -69,6 +77,7 @@ class MultiClassModel(BaseModel):
                 y_pred = self(x_train)  # get the predicted values from the training set
                 # The loss in this batch
                 loss = criterion(y_pred, y_train) # calculate loss for this batch
+
 
                 # Update parameters
                 self.optimizer.zero_grad()
@@ -91,10 +100,14 @@ class MultiClassModel(BaseModel):
                 """
 
             # calculate loss for this "epoch" -> the sum of losses for all batches at this epoch
+            # calculated per the number of batch
+            # divided by length of the train loader which is len(self.train_dataset) / batch_size = len(train_loader)
             avg_loss = epoch_loss / len(train_loader)
 
             # calculate accuracy for this "epoch" -> the sum of correct predictions for all batches at this epoch
-            accuracy = train_correct / self.number_of_train_data
+            # calculated per the number of batch
+            # divided by NOT length of the train loader, divided by the actual length of the train_dataset
+            accuracy = train_correct / (len(train_loader) * batch_size)
 
             print(f"TRAINING: Epoch {epoch + 1}/{epochs}, Loss: {avg_loss:.4f}, Accuracy: {accuracy:.4f}")
 
@@ -105,10 +118,10 @@ class MultiClassModel(BaseModel):
             self.model_trained = True
 
     def _test(self,batch_size:int=10,shuffle:bool=False):
-        test_loader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=shuffle)
-        criterion: nn.Module = nn.CrossEntropyLoss()
 
-        self.eval()
+        self.eval()  # set evaluation mode on
+        test_loader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=shuffle)
+        criterion = self.criterion
 
         # the total loss
         test_loss = 0.0

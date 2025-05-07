@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import TensorDataset
+from torch.utils.data import Dataset
 from typing import Self
 
 
@@ -12,9 +12,10 @@ class BaseModel(nn.Module):
         self.model_trained = False
 
 
-    def __set_dataset__(self,train_dataset:TensorDataset,test_dataset:TensorDataset):
+    def __set_dataset__(self,train_dataset:Dataset,test_dataset:Dataset):
         """
         This method is used to define the data sets which are required.
+        Given parameters must be Dataset object in order to be convertable to DataLoader in train_model().
 
         :param train_dataset: A training dataset, the type of which is TensorDataset, is required for training.
         :param test_dataset:  A test dataset, the type of which is TensorDataset, is required for evaluating.
@@ -42,18 +43,18 @@ class BaseModel(nn.Module):
         return self
 
 
-    def train_model(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,criterion:nn.Module=nn.CrossEntropyLoss(),optimizer:str='adam',lr:float=0.001):
+    def train_model(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):
         """
          This method is used to train the model.
 
         :param batch_size: Batch size for DataLoader
         :param shuffle: Choose whether your data is mixed or not -> true of false
         :param epochs: Number of epochs
-        :param optimizer: Optimizer is a string value and according to the given -> torch.optim.Adam or torch.optim.SGD will be used.
+        :param optimizer: Optimizer is a string value and according to the given string -> 'adam' = torch.optim.Adam | 'sgd' =  torch.optim.SGD will be used.
 
         """
         if not hasattr(self,'train_dataset') or  not hasattr(self,'test_dataset'): raise NotImplementedError(" 'train_dataset' and 'test_dataset' must be defined ! To define these attributes use the method '__set_dataset__()' of this class")
-        self._train(batch_size, shuffle,epochs)
+        self._train(batch_size, shuffle,epochs,optimizer,lr)
 
     def _train(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):
         """
