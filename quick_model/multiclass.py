@@ -2,25 +2,32 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from matplotlib import pyplot as plt
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, TensorDataset
 
 from quick_model.base import BaseModel
 
 
 class MultiClassModel(BaseModel):
 
-    def __init__(self, input_feature: int, output_feature: int = 3, num_of_layer: int = 3):
+    def __init__(self, train_dataset: TensorDataset, test_dataset: TensorDataset, num_of_layer: int = 3):
         """
-        Initializes a multi-class classification model using CrossEntropyLoss as the default loss function.
-        The model also calculates accuracy during training.
+        Initializes a neural network model for multi-class classification using CrossEntropyLoss
+        as the default loss function. Accuracy is calculated during training to monitor performance.
 
-        :param input_feature: Number of input features in your dataset.
-        :param output_feature: Number of output classes in your label dataset. Default is 3. Example: [0, 1, 2] for a 3-class classification.
-        :param num_of_layer: Total number of layers in the model, including the input and output layers.
-                             Default is 3, which results in 1 hidden layer.
+        The input feature size is automatically inferred from the last dimension of X in the train_dataset.
+        The number of output units corresponds to the number of unique class labels in the dataset,
+        which is required for multi-class classification tasks (e.g., labels like [0, 1, 2] for 3 classes).
+
+        Parameters:
+        - train_dataset (TensorDataset): The dataset used for training the model.
+        - test_dataset (TensorDataset): The dataset used for evaluating the model.
+        - num_of_layer (int): Total number of layers including input and output layers.
+                              Default is 3, which creates one hidden layer.
         """
+        super().__init__(train_dataset, test_dataset)
+        input_feature: int = train_dataset.tensors[0].shape[-1]  # get input feature, (e.g., dataset shape like [120,4], it takes '4' as the input feature)
+        output_feature: int = len(set(train_dataset.tensors[1].tolist())) # how many different types available for in labels
 
-        super().__init__()
 
         self.input_layer = nn.Linear(input_feature,16)
         self.layers.append(self.input_layer)
@@ -43,10 +50,6 @@ class MultiClassModel(BaseModel):
         x = F.log_softmax(self.layers[-2](x),dim=1) # Apply softmax activation function between the layer before last and the last.
         return self.output_layer(x)
 
-
-    def __set_dataset__(self,train_dataset:Dataset,test_dataset:Dataset):
-        self.train_dataset = train_dataset
-        self.test_dataset = test_dataset
 
     def _train(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):
 

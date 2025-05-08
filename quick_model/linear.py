@@ -2,23 +2,32 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from matplotlib import pyplot as plt
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, TensorDataset
 from quick_model.base import BaseModel
 
 
 class LinearModel(BaseModel):
 
-    def __init__(self, input_feature: int, output_feature: int = 1, num_of_layer: int = 3):
+    def __init__(self, train_dataset: TensorDataset, test_dataset: TensorDataset, num_of_layer: int = 3):
         """
-        Initializes a linear regression model using MSELoss as the default loss function.
+        Initializes a neural network model for linear regression using Mean Squared Error (MSELoss)
+        as the default loss function.
 
-        :param input_feature: Number of input features in your dataset.
-        :param output_feature: Number of continuous output values to predict. Default is 1.
-        :param num_of_layer: Total number of layers in the model, including the input and output layers.
-                             Default is 3, which results in 1 hidden layer.
+        The input feature size is automatically inferred from the last dimension of X in the train_dataset.
+        The number of output units is typically 1 for single-target regression, but it can be extended
+        to multiple continuous targets if needed.
+
+        Parameters:
+        - train_dataset (TensorDataset): The dataset used for training the model.
+        - test_dataset (TensorDataset): The dataset used for evaluating the model.
+        - num_of_layer (int): Total number of layers including input and output layers.
+                              Default is 3, which creates one hidden layer.
         """
+        super().__init__(train_dataset, test_dataset)
 
-        super().__init__()
+        input_feature:int = train_dataset.tensors[0].shape[-1] # get input feature, (e.g., dataset shape like [120,4], it takes '4' as the input feature)
+        output_feature:int =\
+            1 if len(train_dataset.tensors[1].shape) == 1 else train_dataset.tensors[1].shape[-1] # if tensor is 1 dimensional, it is 1 else : the last index of the shape
 
         self.input_layer = nn.Linear(input_feature,16)
         self.layers.append(self.input_layer)
@@ -38,10 +47,6 @@ class LinearModel(BaseModel):
             if layer == self.layers[-1]:break
             x = F.relu(layer(x))  # Apply ReLU activation function for each layer
         return self.output_layer(x)
-
-    def __set_dataset__(self,train_dataset:Dataset,test_dataset:Dataset):
-        self.train_dataset = train_dataset
-        self.test_dataset = test_dataset
 
     def _train(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):
 

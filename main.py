@@ -5,6 +5,8 @@ from torch.utils.data import TensorDataset
 from quick_model import MultiClassModel
 import pandas as pd
 
+from quick_model.cnn import Channels
+
 """
 X_np, y_np = make_regression(n_samples=100, n_features=5, noise=10.0, random_state=42)
 X = torch.tensor(X_np, dtype=torch.float32)
@@ -68,10 +70,14 @@ y_test_tensor = torch.tensor(y_test, dtype=torch.long)
 train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
 test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
 
-
-model = MultiClassModel(4,3,3)
-model.__set_dataset__(train_dataset,test_dataset)
+print(train_dataset.tensors[1].ndim)
+"""
+model = MultiClassModel(train_dataset,test_dataset,3)
 model.train_model(batch_size=10,epochs=200,lr=0.001,optimizer='adam')
 model.test_model(batch_size=10,shuffle=False)
 model.graph_loss()
 model.graph_accuracy()
+"""
+
+
+

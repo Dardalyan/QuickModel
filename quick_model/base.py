@@ -1,28 +1,18 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset
+from torch.utils.data import  TensorDataset
 from typing import Self
 
 
 class BaseModel(nn.Module):
 
-    def __init__ (self):
+    def __init__ (self,train_dataset:TensorDataset,test_dataset:TensorDataset):
         super().__init__()
         self.layers:list[nn.Module] = []
         self.model_trained = False
 
-
-    def __set_dataset__(self,train_dataset:Dataset,test_dataset:Dataset):
-        """
-        This method is used to define the data sets which are required.
-        Given parameters must be Dataset object in order to be convertable to DataLoader in train_model().
-
-        :param train_dataset: A training dataset, the type of which is TensorDataset, is required for training.
-        :param test_dataset:  A test dataset, the type of which is TensorDataset, is required for evaluating.
-        """
-        raise NotImplementedError()
-
-
+        self.train_dataset = train_dataset
+        self.test_dataset = test_dataset
 
     def forward (self,x):
         raise NotImplementedError()
@@ -53,7 +43,6 @@ class BaseModel(nn.Module):
         :param optimizer: Optimizer is a string value and according to the given string -> 'adam' = torch.optim.Adam | 'sgd' =  torch.optim.SGD will be used.
 
         """
-        if not hasattr(self,'train_dataset') or  not hasattr(self,'test_dataset'): raise NotImplementedError(" 'train_dataset' and 'test_dataset' must be defined ! To define these attributes use the method '__set_dataset__()' of this class")
         self._train(batch_size, shuffle,epochs,optimizer,lr)
 
     def _train(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):
@@ -82,9 +71,7 @@ class BaseModel(nn.Module):
         :param shuffle: Choose whether your data is mixed or not -> true of false
         """
 
-        if not hasattr(self,'train_dataset') or  not hasattr(self,'test_dataset'): raise NotImplementedError(" 'train_dataset' and 'test_dataset' must be defined ! To define these attributes use the method '__set_dataset__()' of this class")
         if not self.model_trained: raise Exception("Model is not trained !")
-
         self._test(batch_size,shuffle)
 
     def _test(self,batch_size:int=10,shuffle:bool=False):
