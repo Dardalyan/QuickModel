@@ -26,7 +26,14 @@ class MultiClassModel(BaseModel):
         """
         super().__init__(train_dataset, test_dataset)
         input_feature: int = train_dataset.tensors[0].shape[-1]  # get input feature, (e.g., dataset shape like [120,4], it takes '4' as the input feature)
-        output_feature: int = len(set(train_dataset.tensors[1].tolist())) # how many different types available for in labels
+
+        if train_dataset.tensors[1].ndim == 1:
+            # works if labels are in one dimension like [120]
+            output_feature: int = len(
+                set(train_dataset.tensors[1].tolist()))  # how many different types available for in labels
+        else:
+            # works if labels are in more than one dimension like [120,10]
+            output_feature: int = train_dataset.tensors[1].shape[1]  # for example if labels :[120,10] so we get 10
 
 
         self.input_layer = nn.Linear(input_feature,16)
