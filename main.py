@@ -70,7 +70,8 @@ y_test_tensor = torch.tensor(y_test, dtype=torch.long)
 train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
 test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
 
-print(train_dataset.tensors[1].ndim)
+a = nn.Conv2d(1,6,1,1)
+print(a.kernel_size[0])
 """
 model = MultiClassModel(train_dataset,test_dataset,3)
 model.train_model(batch_size=10,epochs=200,lr=0.001,optimizer='adam')

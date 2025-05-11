@@ -27,7 +27,7 @@ class LinearModel(BaseModel):
 
         input_feature:int = train_dataset.tensors[0].shape[-1] # get input feature, (e.g., dataset shape like [120,4], it takes '4' as the input feature)
         output_feature:int =\
-            1 if len(train_dataset.tensors[1].shape) == 1 else train_dataset.tensors[1].shape[-1] # if tensor is 1 dimensional, it is 1 else : the last index of the shape
+            1 if len(train_dataset.tensors[1].shape) == 1 else train_dataset.tensors[1].shape[-1] # if tensor is 1 dimensional, it is 1 else : the last index of shape
 
         self.input_layer = nn.Linear(input_feature,16)
         self.layers.append(self.input_layer)

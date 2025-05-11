@@ -51,11 +51,10 @@ class MultiClassModel(BaseModel):
 
     def forward(self,x):
         for layer in self.layers:
-            if layer == self.layers[-2]:break
+            if layer == self.layers[-1]:break
             x = F.relu(layer(x)) # Apply ReLU activation function for each layer except between the last and the layer before last
-
-        x = F.log_softmax(self.layers[-2](x),dim=1) # Apply softmax activation function between the layer before last and the last.
-        return self.output_layer(x)
+        x = F.log_softmax(self.output_layer(x),dim=1) # Apply softmax activation function to the last layer
+        return x
 
 
     def _train(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):

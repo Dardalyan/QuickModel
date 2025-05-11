@@ -32,21 +32,19 @@ class BinaryModel(BaseModel):
         self.layers.append(self.input_layer)
         self.criterion = nn.BCEWithLogitsLoss()
 
-        for i in range(0,num_of_layer-2):
-            lof:int = self.layers[-1].out_features
-            self.layers.append(nn.Linear(lof,lof * 2))
+        for i in range(0, num_of_layer - 2):
+            lof: int = self.layers[-1].out_features
+            self.layers.append(nn.Linear(lof, lof * 2))
 
-        self.output_layer =nn.Linear(self.layers[-1].out_features,output_feature)
+        self.output_layer = nn.Linear(self.layers[-1].out_features, output_feature)
         self.layers.append(self.output_layer)
 
-
-    def forward(self,x):
+    def forward(self, x):
         for layer in self.layers:
-            if layer == self.layers[-2]:break
-            x = F.relu(layer(x)) # Apply ReLU activation function for each layer except between the last and the layer before last
-
-        x = F.sigmoid(self.layers[-2](x)) # Apply sigmoid activation function between the layer before last and the last.
-        return self.output_layer(x)
+            if layer == self.layers[-1]: break
+            x = F.relu(layer(x))  # Apply ReLU activation function for each layer except between the last and the layer before last
+        x = F.sigmoid(self.output_layer(x))  # Apply sigmoid activation function to the last layer
+        return x
 
     def _train(self, batch_size: int = 10, shuffle: bool = True, epochs: int = 1, optimizer: str = 'adam',
                lr: float = 0.001):
