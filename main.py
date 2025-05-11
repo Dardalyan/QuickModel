@@ -1,11 +1,12 @@
 import torch
 from sklearn.model_selection import train_test_split
-from torch import nn
-from torch.utils.data import TensorDataset
-from quick_model import MultiClassModel
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, TensorDataset
+from torchvision import datasets, transforms
+from quick_model import MultiClassModel, Conv2DModel
 import pandas as pd
 
-from quick_model.cnn import Channels
 
 """
 X_np, y_np = make_regression(n_samples=100, n_features=5, noise=10.0, random_state=42)
@@ -40,7 +41,7 @@ dataFrame = pd.read_csv('quick_model/iris.csv')
 """
 
 set_of_variety = set(dataFrame['variety'])
-print(set_of_variety) # -> output : {'Virginica', 'Setosa', 'Versicolor'}
+#print(set_of_variety) # -> output : {'Virginica', 'Setosa', 'Versicolor'}
 
 # then we need to change these information with values instead of string values
 dataFrame['variety'] = dataFrame['variety'].replace('Virginica',0)
@@ -67,11 +68,21 @@ X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
 y_test_tensor = torch.tensor(y_test, dtype=torch.long)
 
 # Create TensorDataset
-train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
-test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
+#train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+#test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
 
-a = nn.Conv2d(1,6,1,1)
-print(a.kernel_size[0])
+
+transform = transforms.ToTensor()
+train_data = datasets.MNIST(root='./quick_model/cnn_data', train=True, download=True, transform=transform)
+test_data = datasets.MNIST(root='./quick_model/cnn_data', train=False, download=False, transform=transform)
+
+train_data.data = train_data.data.unsqueeze(1)
+test_data.data = test_data.data.unsqueeze(1)
+
+train_dataset = TensorDataset(train_data.data, train_data.targets)
+test_dataset = TensorDataset(test_data.data, test_data.targets)
+
+
 """
 model = MultiClassModel(train_dataset,test_dataset,3)
 model.train_model(batch_size=10,epochs=200,lr=0.001,optimizer='adam')
@@ -80,5 +91,11 @@ model.graph_loss()
 model.graph_accuracy()
 """
 
+
+model = Conv2DModel(train_dataset,test_dataset,3,1,3,3)
+model.train_model(batch_size=10,epochs=200,lr=0.001,optimizer='adam')
+model.test_model(batch_size=10,shuffle=False)
+model.graph_loss()
+model.graph_accuracy()
 
 

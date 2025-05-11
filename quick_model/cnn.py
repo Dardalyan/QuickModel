@@ -31,14 +31,27 @@ class Conv2DModel(BaseModel):
         """
         super().__init__(train_dataset, test_dataset)
 
-        self.conv_layers:list[nn.Conv2d] = []
-        self.flattened_layers:list[nn.Linear] = []
+        self.conv_layers = nn.ModuleList()
+        self.flattened_layers = nn.ModuleList()
         self.criterion = nn.CrossEntropyLoss()
 
-
+        # Channel Control: 1 for GrayScale
         if len(train_dataset.tensors[0].shape) == 3 :
-            raise Exception("The size of tensors must be correct format -> [batch_size,channels,height,width] ")
+            raise Exception("Uncommon or unknown chanell size ! "
+                    "\n The channel size mush be 1,3 or 4 which represent GrayScale, RGB and RGBA respectively.")
 
+        # Channel Control: 3 for RGB | 4 for RGBA
+        if train_dataset.tensors[0].shape[1] == Channels.GrayScale.value:
+            self.channel: int = Channels.GrayScale.value
+        elif train_dataset.tensors[0].shape[1] == Channels.RGB.value:
+            self.channel: int = Channels.RGB.value
+        elif train_dataset.tensors[0].shape[1] == Channels.RGBA.value:
+            self.channel: int = Channels.RGBA.value
+        else:
+            raise Exception(
+                "Uncommon or unknown chanell size ! "
+                "\n The channel size mush be 1,3 or 4 which represent GrayScale, RGB and RGBA respectively."
+            )
 
         if train_dataset.tensors[1].ndim == 1 :
             # works if labels are in one dimension like [120]
@@ -56,27 +69,15 @@ class Conv2DModel(BaseModel):
 
         # number of  pooling layers
         self.num_of_pooling = num_of_conv_layer
-        self.p_stride = 2
-        self.p_kernel = 2
-
-        # Channel Control: 1 for GrayScale | 3 for RGB | 4 for RGBA
-        if train_dataset.tensors[0].shape[1] == Channels.GrayScale:
-            self.channel:int = Channels.GrayScale.value
-        elif train_dataset.tensors[0].shape[1] == Channels.RGB:
-            self.channel:int = Channels.RGB.value
-        elif train_dataset.tensors[0].shape[1] == Channels.RGBA:
-            self.channel:int = Channels.RGBA.value
-        else: raise Exception(
-            "Uncommon or unknown chanell size ! "
-            "\n The channel size mush be 1,3 or 4 which represent GrayScale, RGB and RGBA respectively."
-        )
+        self.p_stride:int = 2
+        self.p_kernel:int = 2
 
         # The first convolutional layer
         self.conv_layers.append(nn.Conv2d(self.channel, 8, kernel_size, stride))
 
         # Remaining Convolutional Layers
         for i in range(num_of_conv_layer-1):
-            self.conv_layers.append(nn.Conv2d(self.channel, self.conv_layers[-1].out_channels * 2, kernel_size, stride))
+            self.conv_layers.append(nn.Conv2d(self.conv_layers[-1].out_channels, self.conv_layers[-1].out_channels * 2, kernel_size, stride))
 
         # Calculate h and w after c.o.s.f. (n times for convolutional , n times for pooling->(after for each conv layer) )
         for index in range(self.num_of_pooling):
@@ -132,15 +133,10 @@ class Conv2DModel(BaseModel):
 
     def forward(self,x):
 
-        for i in range(len(self.conv_layers)):
 
-            # i == 0,2,4,6,8...
-            if i % 2 == 0 :
-                x = F.relu(self.conv_layers[i](x))
-
-            # i == 1,3,5,7,9...
-            if i % 2 != 0 :
-                x = F.max_pool2d(x,self.p_kernel,self.p_stride)
+        for conv in self.conv_layers:
+            x = F.relu(conv(x))
+            x = F.max_pool2d(x, self.p_kernel, self.p_stride)
 
         # Make x one dimensional (flattened)
         x = x.view(-1,self.flattened_layers[0].in_features)
@@ -181,8 +177,8 @@ class Conv2DModel(BaseModel):
         :return: Returns the result h,w: (h,w-kernel)/stride + 1
         """
 
-        h = (h - kernel) / stride +1
-        w = (w - kernel) / stride +1
+        h = (h - kernel) // stride +1
+        w = (w - kernel) // stride +1
 
         return h,w
 
@@ -214,6 +210,7 @@ class Conv2DModel(BaseModel):
             # training here !
             for b, (x_train, y_train) in enumerate(train_loader):
                 b += 1  # start batches at 1
+                x_train = x_train.float()
                 y_pred = self(x_train)  # get the predicted values from the training set
                 # The loss in this batch
                 loss = criterion(y_pred, y_train) # calculate loss for this batch
