@@ -8,7 +8,7 @@ class BaseModel(nn.Module):
 
     def __init__ (self,train_dataset:TensorDataset,test_dataset:TensorDataset):
         super().__init__()
-        self.layers:list[nn.Module] = []
+        self.layers = nn.ModuleList()
         self.model_trained = False
 
         self.train_dataset = train_dataset
@@ -43,6 +43,8 @@ class BaseModel(nn.Module):
         :param optimizer: Optimizer is a string value and according to the given string -> 'adam' = torch.optim.Adam | 'sgd' =  torch.optim.SGD will be used.
 
         """
+        self.train() # set model train mode on.
+
         self._train(batch_size, shuffle,epochs,optimizer,lr)
 
     def _train(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):
@@ -70,6 +72,7 @@ class BaseModel(nn.Module):
         :param batch_size: Batch size for DataLoader
         :param shuffle: Choose whether your data is mixed or not -> true of false
         """
+        self.eval()  # set evaluation mode on
 
         if not self.model_trained: raise Exception("Model is not trained !")
         self._test(batch_size,shuffle)

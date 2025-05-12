@@ -1,8 +1,7 @@
-from .cnn import Conv2DModel
-from .linear import LinearModel
-from .multiclass import MultiClassModel
-from .binary import BinaryModel
-from enum import Enum
+from .conv2d_model import Conv2DModel
+from .linear_model import LinearModel
+from .multiclass_model import MultiClassModel
+from .binary_model import BinaryModel
 
 __all__ = [
     'LinearModel',

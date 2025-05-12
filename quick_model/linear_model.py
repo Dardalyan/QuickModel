@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
-from quick_model.base import BaseModel
+from quick_model.base_model import BaseModel
 
 
 class LinearModel(BaseModel):
@@ -50,7 +50,6 @@ class LinearModel(BaseModel):
 
     def _train(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):
 
-        self.train() # set model train mode on.
         train_loader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=shuffle) # convert Dataset to DataLoader
         criterion = self.criterion
 
@@ -82,12 +81,6 @@ class LinearModel(BaseModel):
                 # We count the total loss 'till the end of this loop -> (the last batch == before the new epoch)
                 epoch_loss += loss.item()
 
-                # This printing values are to see predicted, trained and the correct ones
-                """
-                print("Predicted",predicted)
-                print("y_train",y_train)
-                print(predicted == y_train)
-                """
 
             # calculate loss for this "epoch" -> the sum of losses for all batches at this epoch
             # calculated per the number of batch
@@ -103,7 +96,6 @@ class LinearModel(BaseModel):
 
     def _test(self,batch_size:int=10,shuffle:bool=False):
 
-        self.eval()  # set evaluation mode on
         test_loader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=shuffle)
         criterion = self.criterion
 

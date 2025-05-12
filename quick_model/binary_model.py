@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
-from quick_model.base import BaseModel
+from quick_model.base_model import BaseModel
 
 
 class BinaryModel(BaseModel):
@@ -49,7 +49,6 @@ class BinaryModel(BaseModel):
     def _train(self, batch_size: int = 10, shuffle: bool = True, epochs: int = 1, optimizer: str = 'adam',
                lr: float = 0.001):
 
-        self.train() # set model train mode on.
         train_loader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=shuffle) # convert Dataset to DataLoader
         criterion = self.criterion
 
@@ -117,7 +116,7 @@ class BinaryModel(BaseModel):
             self.model_trained = True
 
     def _test(self, batch_size: int = 10, shuffle: bool = False):
-        self.eval() # set evaluation mode on
+
         test_loader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=shuffle)
         criterion = self.criterion
 

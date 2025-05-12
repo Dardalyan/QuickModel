@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from matplotlib import pyplot as plt
 from torch.utils.data import DataLoader, TensorDataset
 
-from quick_model.base import BaseModel
+from quick_model.base_model import BaseModel
 
 
 class MultiClassModel(BaseModel):
@@ -59,7 +59,6 @@ class MultiClassModel(BaseModel):
 
     def _train(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):
 
-        self.train() # set model train mode on.
         train_loader = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=shuffle) # convert Dataset to DataLoader
         criterion = self.criterion
 
@@ -100,14 +99,6 @@ class MultiClassModel(BaseModel):
                 predicted = torch.max(y_pred, dim=1)[1]
                 train_correct += (predicted == y_train).sum().item()
 
-                # This printing values are to see predicted, trained and the correct ones
-                """
-                print("Predicted",predicted)
-                print("y_train",y_train)
-                print(predicted == y_train)
-                print("train_correct:",train_correct)
-                """
-
             # calculate loss for this "epoch" -> the sum of losses for all batches at this epoch
             # calculated per the number of batch
             # divided by length of the train loader which is len(self.train_dataset) / batch_size = len(train_loader)
@@ -128,7 +119,6 @@ class MultiClassModel(BaseModel):
 
     def _test(self,batch_size:int=10,shuffle:bool=False):
 
-        self.eval()  # set evaluation mode on
         test_loader = DataLoader(self.test_dataset, batch_size=batch_size, shuffle=shuffle)
         criterion = self.criterion
 
