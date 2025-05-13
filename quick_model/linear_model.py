@@ -45,7 +45,7 @@ class LinearModel(BaseModel):
     def forward(self,x):
         for layer in self.layers:
             if layer == self.layers[-1]:break
-            x = F.relu( (x))  # Apply ReLU activation function for each layer
+            x = F.relu(layer(x))  # Apply ReLU activation function for each layer
         return self.output_layer(x)
 
     def _train(self,batch_size:int=10,shuffle:bool=True,epochs:int=1,optimizer:str='adam',lr:float=0.001):
@@ -132,9 +132,4 @@ class LinearModel(BaseModel):
         plt.show()
 
     def graph_accuracy(self):
-        # Graph Accuracy Results
-
-        plt.plot([t for t in self.train_accuracy], label="Training Accuracy")
-        plt.title("Accuracy at the end of Epochs")
-        plt.legend()
-        plt.show()
+        pass
