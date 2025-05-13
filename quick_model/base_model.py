@@ -22,14 +22,18 @@ class BaseModel(nn.Module):
         This method is used to save the model trained.
         :param path: Path to save the model.
         """
-        torch.save(self.model.state_dict(), path)
+        torch.save(self.state_dict(), path)
 
-    def load_model(self, path:str) -> Self:
+    def load_model(self, path:str, strict:bool = False) -> Self:
         """
         This method is used to load the model saved.
         :param path: Path to load the model from.
+        :param strict: If set to True, the model's state_dict must exactly match the model architecture.
+                       If set to False, it allows for a mismatch in the model architecture, which will load
+                   only the matching layers' weights, and leave the rest randomly initialized. Default is False.
+        :return: The instance of the model with loaded weights.
         """
-        self.load_state_dict(torch.load(path))
+        self.load_state_dict(torch.load(path), strict = strict)
         return self
 
 
@@ -100,3 +104,29 @@ class BaseModel(nn.Module):
         Graphs the results of the training accuracy.
         """
         raise NotImplementedError()
+
+    def add_hidden_layer(self, layer_type: type, index: int):
+        """
+        This method adds a new hidden layer to the model architecture.
+
+        :param layer_type: The type of the layer to be added (e.g., nn.Linear, nn.Conv2d, etc.).
+                            This specifies what kind of layer to create.
+        :param index: The index position in the model architecture where the new layer should be added.
+                      The index determines the position of the new layer within the existing layers list.
+        :return: None. The method modifies the model's layer architecture in place.
+        """
+        raise NotImplementedError()
+
+    def remove_hidden_layer(self, index: int):
+        """
+        This method removes an existing hidden layer from the model architecture.
+
+        :param index: The index position of the layer to be removed.
+                      This index refers to the position of the layer in the current architecture.
+        :return: None. The method modifies the model's layer architecture by removing the specified layer.
+        """
+        raise NotImplementedError()
+
+
+
+
