@@ -9,7 +9,7 @@ from quick_model.base_model import BaseModel
 
 class MultiClassModel(BaseModel):
 
-    def __init__(self, train_dataset: TensorDataset, test_dataset: TensorDataset, num_of_layer: int = 3):
+    def __init__(self, train_dataset: TensorDataset, test_dataset: TensorDataset, num_of_hidden_layer: int = 3):
         """
         Initializes a neural network model for multi-class classification using CrossEntropyLoss
         as the default loss function. Accuracy is calculated during training to monitor performance.
@@ -21,8 +21,8 @@ class MultiClassModel(BaseModel):
         Parameters:
         - train_dataset (TensorDataset): The dataset used for training the model.
         - test_dataset (TensorDataset): The dataset used for evaluating the model.
-        - num_of_layer (int): Total number of layers including input and output layers.
-                              Default is 3, which creates one hidden layer.
+        - num_of_hidden_layer (int): The number of hidden layers in the model.
+                                     Default is 3.
         """
         super().__init__(train_dataset, test_dataset)
         input_feature: int = train_dataset.tensors[0].shape[-1]  # get input feature, (e.g., dataset shape like [120,4], it takes '4' as the input feature)
@@ -41,7 +41,7 @@ class MultiClassModel(BaseModel):
         self.criterion = nn.CrossEntropyLoss()
 
 
-        for i in range(0,num_of_layer-2):
+        for i in range(0,num_of_hidden_layer):
             lof:int = self.layers[-1].out_features
             self.layers.append(nn.Linear(lof,lof * 2))
 

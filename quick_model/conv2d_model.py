@@ -38,8 +38,8 @@ class Conv2DModel(BaseModel):
         - test_dataset (TensorDataset): The dataset used for evaluation. Should have the same shape structure as train_dataset.
         - kernel_size (int, optional): The kernel size for convolutional layers. Default is 3.
         - stride (int, optional): The stride value for convolutional layers. Default is 1.
-        - num_of_conv_layer (int, optional): Total number of convolutional layers. Default is 2.
-        - num_of_flattened_layer (int, optional): Total number of fully connected (flattened) layers. Default is 3.
+        - num_of_conv_layer (int, optional): Total number of convolutional layers. Default is 2 The INPUT LAYER is included !
+        - num_of_flattened_layer (int, optional): Total number of fully connected (flattened) layers. Default is 3. Default is 2 The OUTPUT LAYER is included !
 
         Raises:
         - Exception: If the input channel size is not one of 1 (grayscale), 3 (RGB), or 4 (RGBA).
@@ -96,7 +96,8 @@ class Conv2DModel(BaseModel):
         # Convolutional Layers  ----------------------------------------------------------------------------------
 
         # The first convolutional layer
-        self.__conv_layers.append(nn.Conv2d(self.channel, 8, kernel_size, stride))
+        self.input_layer = nn.Conv2d(self.channel, 8, kernel_size, stride)
+        self.__conv_layers.append(self.input_layer)
 
         # Remaining Convolutional Layers
         for i in range(num_of_conv_layer-1):
@@ -114,13 +115,15 @@ class Conv2DModel(BaseModel):
         # SET THE FIRST LINEAR LAYER (FLATENNED) ---------------------------------------------------
         if num_of_flattened_layer == 1 : # if we have just 1 flattened layer
 
-            # The only Linear layer
-            self.__flattened_layers.append(nn.Linear(
+            # The only and the last Linear layer (output layer)
+            self.output_layer = nn.Linear(
                 # out_channel * the last HEIGHT * the last WIDTH
                 in_features=self.__conv_layers[-1].out_channels * h * w,
                 # Set output features based on the number of target classes which is taken from labels
                 out_features= self.output_feature
-            ))
+            )
+
+            self.__flattened_layers.append(self.output_layer)
 
         else : # if we have more than 1 flattened layer
             # The first Linear layer
@@ -138,20 +141,24 @@ class Conv2DModel(BaseModel):
 
             # If it is the last layer
             if i == num_of_flattened_layer - 2:
-                self.__flattened_layers.append(nn.Linear(
-                    # out features of the last Linear Layer
+
+                # The last Linear layer (output layer)
+                self.output_layer = nn.Linear(
+                    # out features of the last Linear Layer (output layer)
                     in_features=self.__flattened_layers[-1].out_features ,
                     # Set output features based on the number of target classes which is taken from labels
                     out_features=self.output_feature
-                ))
+                )
+
+                self.__flattened_layers.append(self.output_layer)
 
             # If it is NOT the last layer (we have at least 1 more layer before the last one)
             else:
                 self.__flattened_layers.append(nn.Linear(
-                    # out features of the last Linear Layer
+                    # out features of the last Linear Layer (output layer)
                     in_features=self.__flattened_layers[-1].out_features,
                     # Set output features as half of the last layer's output features
-                    out_features= self.__flattened_layers[-1].out_features // 2
+                    out_features= self.__flattened_layers[-1].out_features // 2 if self.__flattened_layers[-1].out_features >= 2 else 1
                 ))
         # -----------------------------------------------------------------------------------------
 

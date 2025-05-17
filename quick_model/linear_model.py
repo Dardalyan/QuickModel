@@ -8,7 +8,7 @@ from quick_model.base_model import BaseModel
 
 class LinearModel(BaseModel):
 
-    def __init__(self, train_dataset: TensorDataset, test_dataset: TensorDataset, num_of_layer: int = 3):
+    def __init__(self, train_dataset: TensorDataset, test_dataset: TensorDataset, num_of_hidden_layer: int = 3):
         """
         Initializes a neural network model for linear regression using Mean Squared Error (MSELoss)
         as the default loss function.
@@ -20,8 +20,8 @@ class LinearModel(BaseModel):
         Parameters:
         - train_dataset (TensorDataset): The dataset used for training the model.
         - test_dataset (TensorDataset): The dataset used for evaluating the model.
-        - num_of_layer (int): Total number of layers including input and output layers.
-                              Default is 3, which creates one hidden layer.
+        - num_of_hidden_layer (int): The number of hidden layers in the model.
+                                     Default is 3.
         """
         super().__init__(train_dataset, test_dataset)
 
@@ -34,7 +34,7 @@ class LinearModel(BaseModel):
         self.criterion = nn.MSELoss()
 
 
-        for i in range(0,num_of_layer-2):
+        for i in range(0,num_of_hidden_layer):
             lof:int = self.layers[-1].out_features
             self.layers.append(nn.Linear(lof,lof * 2))
 

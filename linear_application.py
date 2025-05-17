@@ -44,7 +44,7 @@ train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
 test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
 
 # Create Model
-model = LinearModel(train_dataset,test_dataset,3)
+model = LinearModel(train_dataset,test_dataset,2)
 
 # Train Model
 model.train_model(batch_size=5,epochs=100,lr=0.001,optimizer='adam')
