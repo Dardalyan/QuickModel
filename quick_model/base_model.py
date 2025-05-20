@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import  TensorDataset
-from typing import Self
+from typing import Self, Union
 
 
 class BaseModel(nn.Module):
@@ -102,28 +102,6 @@ class BaseModel(nn.Module):
     def graph_accuracy(self):
         """
         Graphs the results of the training accuracy.
-        """
-        raise NotImplementedError()
-
-    def add_hidden_layer(self, layer_type: type, index: int):
-        """
-        This method adds a new hidden layer to the model architecture.
-
-        :param layer_type: The type of the layer to be added (e.g., nn.Linear, nn.Conv2d, etc.).
-                            This specifies what kind of layer to create.
-        :param index: The index position in the model architecture where the new layer should be added.
-                      The index determines the position of the new layer within the existing layers list.
-        :return: None. The method modifies the model's layer architecture in place.
-        """
-        raise NotImplementedError()
-
-    def remove_hidden_layer(self, index: int):
-        """
-        This method removes an existing hidden layer from the model architecture.
-
-        :param index: The index position of the layer to be removed.
-                      This index refers to the position of the layer in the current architecture.
-        :return: None. The method modifies the model's layer architecture by removing the specified layer.
         """
         raise NotImplementedError()
 
